@@ -39,17 +39,17 @@ with st.sidebar:
                 "", accept_multiple_files=True, label_visibility="collapsed")
 
 
-pdf_files = []
+# pdf_files = []
 
-if folder_path is not None:
-    for uploaded_file in folder_path:
-        # Ensure the file is a PDF
-        if uploaded_file.name.endswith('.pdf'):
-            pdf_files.append(uploaded_file)
+# if folder_path is not None:
+#     for uploaded_file in folder_path:
+#         # Ensure the file is a PDF
+#         if uploaded_file.name.endswith('.pdf'):
+#             pdf_files.append(uploaded_file)
         
-
+folder_path = r"D:\Transorg\VAT_2.0\Resume Chatbot\data"
 # Get all PDF files in the directory
-# pdf_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.pdf')]
+pdf_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.pdf')]
 
     # st.title("AutoML")
 # Function to extract and convert text to Markdown
