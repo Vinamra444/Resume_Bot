@@ -1,17 +1,16 @@
-import openai
+import openai #To use API of openai
 import streamlit as st
-import os
-import fitz  # PyMuPDF
-from markdownify import markdownify as md
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from dotenv import load_dotenv
-import os
-import tempfile
+import os #to make web apps interactive
+import fitz  #Use when, to open and read the pdfs
+from markdownify import markdownify as md #to convert HTML content to markdown format
+from langchain.text_splitter import RecursiveCharacterTextSplitter #to break large pdfs into small small docs type
+from dotenv import load_dotenv # to use the environment variables
 
-# import PyPDF2
+
 load_dotenv()
 
 api_key = os.getenv('OPENAI_API_KEY')
+model_name = os.getenv('OPENAI_MODEL')
 
 # Use the API key with OpenAI client
 openai.api_key = api_key
@@ -35,23 +34,24 @@ with st.sidebar:
     st.write('')
     st.write('')
     st.write('')
-    folder_path = st.file_uploader(
+    uploaded_files = st.file_uploader(
                 "", accept_multiple_files=True, label_visibility="collapsed")
-
-
-# pdf_files = []
-
-# if folder_path is not None:
-#     for uploaded_file in folder_path:
-#         # Ensure the file is a PDF
-#         if uploaded_file.name.endswith('.pdf'):
-#             pdf_files.append(uploaded_file)
         
-folder_path = r"D:\Transorg\VAT_2.0\Resume Chatbot\data"
-# Get all PDF files in the directory
-pdf_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.pdf')]
+pdf_files = []
 
-    # st.title("AutoML")
+if uploaded_files:
+    folder_path = "uploaded_pdfs"  # Create a temp folder
+    os.makedirs(folder_path, exist_ok=True)
+
+    for uploaded_file in uploaded_files:
+        file_path = os.path.join(folder_path, uploaded_file.name)
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())  # Save uploaded file locally
+        pdf_files.append(file_path)
+else:
+    folder_path = r"D:\Transorg\VAT_2.0\Resume Chatbot\data"  # Default path
+    pdf_files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.pdf')]
+
 # Function to extract and convert text to Markdown
 def extract_and_convert_to_markdown(pdf_path):
     text = ""
@@ -62,7 +62,6 @@ def extract_and_convert_to_markdown(pdf_path):
             markdown_text = md(page_text, heading_style="ATX")  # Convert to Markdown, use ATX style for headings
             text += markdown_text + "\n\n"  # Ensure separation between pages
     return text
-# def extract_and_convert_to_markdown(pdf_path):
 
 # Load all documents and prepare for text splitting
 docs = []
@@ -82,24 +81,22 @@ for chunk in chunks:
     print(chunk.page_content)  # Output or further process the text chunks
     con=con+(chunk.page_content)
 
+llm_prompt1 = f"""
+You have to provide answers for user questions **extremely accurately** and **only from the given text**.  
+⚠️ **Do not generate responses from outside the prompt.**  
+✅ Answers should be **pointwise and well-presented**, but **without symbols like `*`, `#`, or `##`.**
 
-# Initialize OpenAI client
-# client = openai()  # Replace with your actual API key
-llm_prompt1 = '''
-    You have to provide answer for user question extremely accurately and correctly from given prompt only nothing for outside this prompt ,answers should be pointwise and should be presentable without any tags like '*','**', '#' , '##':\n 
-    ''' + con
+{con}
+"""
 
 
 def outp(user_input):
-    
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
+        model=model_name,
         messages=[{"role": "system", "content": llm_prompt1},
         {"role": "user", "content": user_input}]
     )
-
     final=response.choices[0].message.content
-
     return final
 
 
@@ -115,22 +112,8 @@ st.markdown("""
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 """, unsafe_allow_html=True)
 
-
-# Streamlit UI
-
-# st.markdown('<div class="centered-title"><h1>Resume Bot</h1></div>', unsafe_allow_html=True)
-# st.title("Resume Bot")
-# st.markdown("###### Extract information from Resumes and get accurate answers.")
-# st.write('Enter your Query')
-# User query input
-# user_input = st.text_input("Enter your query:", value="", placeholder="Ask a question...")
-# st.markdown('<div class="centered-input">', unsafe_allow_html=True)
 user_input = st.text_input("",value="", placeholder="Ask a question...")
 st.markdown('</div>', unsafe_allow_html=True)
-
-# st.markdown('<div class="centered-input">', unsafe_allow_html=True)
-# user_input = st.text_input("", value="", placeholder="Ask a question...")
-# st.markdown('</div>', unsafe_allow_html=True)
 
 # Submit button
 if st.button("Process"):
