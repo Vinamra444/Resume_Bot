@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form # type: ignore
 import os
 import openai
 import fitz  # PyMuPDF to extract text from PDFs
