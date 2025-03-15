@@ -2,4 +2,5 @@ venv/
 .env
 .history/
 __pycache__/
-__pycache__
+*.pyc
+*.pyo
