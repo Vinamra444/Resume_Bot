@@ -1,9 +1,10 @@
 import os
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException # type: ignore
 from typing import List
 from docling.document_converter import DocumentConverter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.models import CustomDocument
+# from app.utils import extract_and_convert_to_markdown
 
 router = APIRouter()
 
@@ -31,6 +32,10 @@ async def upload_files(files: List[UploadFile] = File(...)):
             # ✅ Use Docling to process the saved file
             result = converter.convert(file_path)  # ✅ Pass file path instead of bytes
             extracted_texts.append(result.document.export_to_markdown())  # ✅ Extract text in Markdown format
+            # with open(file_path, "rb") as f:
+            #     pdf_bytes = f.read()
+            #     extracted_text = extract_and_convert_to_markdown(pdf_bytes)  # ✅ Using function from utils.py
+            #     extracted_texts.append(extracted_text)
 
         # ✅ Store extracted text in CustomDocument format
         docs = [CustomDocument(text, {"source": file.filename}) for text, file in zip(extracted_texts, files)]
